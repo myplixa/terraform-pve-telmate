@@ -1,5 +1,6 @@
 resource "proxmox_pool" "create_pool" {
   comment = "Creation of a brand new pool for the VMs"
+  count   = var.create_pool ? 1 : 0
   poolid  = local.pool_name
 }
 
@@ -7,7 +8,7 @@ resource "proxmox_vm_qemu" "deploy_vm" {
   target_node = element(local.node_name, count.index)
   desc        = local.description_vm
   tags        = join(",", local.tags_vm)
-  pool        = proxmox_pool.create_pool.poolid
+  pool        = local.pool_name
   count       = local.count_vm
 
   name       = "${local.vm_name}-${count.index}"
@@ -52,7 +53,7 @@ resource "proxmox_vm_qemu" "deploy_vm" {
   ciuser     = local.vm_user_name
   cipassword = local.vm_user_password
 
-  nameserver   = local.vm_dns
+  nameserver   = join(" ", local.vm_dns)
   searchdomain = local.vm_search_domain
 
   ipconfig0 = join(",", compact(local.vm_network_config))

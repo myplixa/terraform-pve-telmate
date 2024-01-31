@@ -9,6 +9,11 @@ variable "pool_name" {
   type        = string
   default     = null
 }
+variable "create_pool" {
+  description = "Flag to control pool creation"
+  type        = bool
+  default     = true
+}
 variable "tags_vm" {
   description = "List of virtual machine tags"
   type        = list(string)
