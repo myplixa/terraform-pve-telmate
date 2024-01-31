@@ -96,7 +96,7 @@ variable "vm_search_domain" {
 }
 variable "vm_dns" {
   description = "Sets default DNS server for QEMU GuestAgent"
-  type        = string
+  type        = list(string)
   default     = null
 }
 variable "vm_network_ip_address" {
