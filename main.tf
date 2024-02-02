@@ -1,10 +1,12 @@
-resource "proxmox_pool" "create_pool" {
+resource "proxmox_pool" "pool" {
   comment = "Creation of a brand new pool for the VMs"
   count   = var.create_pool ? 1 : 0
   poolid  = local.pool_name
 }
 
 resource "proxmox_vm_qemu" "deploy_vm" {
+  depends_on = [ proxmox_pool.pool ]
+
   target_node = element(local.node_name, count.index)
   desc        = local.description_vm
   tags        = join(",", local.tags_vm)
