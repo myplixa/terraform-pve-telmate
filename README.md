@@ -1,9 +1,11 @@
 ## Terraform module for creating vm on ProxmoxVE
 
+> [!NOTE]
 > This Terraform module uses the **[Telmate](https://github.com/Telmate/terraform-provider-proxmox)** provider version **v2.9.14**.  
 > Supported version of Proxmox not higher than **8.0.3**
 
-## 
+## Example of using the module
+#### main.tf
 ```sh
 terraform {
   required_providers {
@@ -52,4 +54,37 @@ module "example_deploy_vm" {
   vm_network_ip_address = "xxx.xxx.xxx.xxx/24"
   vm_network_gw_adress  = "xxx.xxx.xxx.xxx"
 }
+```
+
+#### output.tf
+```sh
+output "example_deploy_vm" {
+  value = module.example_deploy_vm.vm_info
+}
+
+resource "local_file" "ansible_inventory_file" {
+  content = templatefile("./ansible/inventory/hosts.tmpl", {
+    
+    vm_user = var.vm_user_name
+    vm_domain = var.vm_domain_name
+
+    vm_example = module.example_deploy_vm.vm_info
+  })
+
+  filename = "./ansible/inventory/hosts"
+}
+```
+
+#### hosts.tmpl
+```tmpl
+[vm]
+%{for key, value in vm_example ~}
+${key}.${vm_domain} ansible_host=${value}
+%{endfor ~}
+
+[all:vars]
+ansible_user="${vm_user}"
+ansible_ssh_private_key_file="~/.ssh/id_rsa"
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ansible_python_interpreter=/usr/bin/python3
 ```

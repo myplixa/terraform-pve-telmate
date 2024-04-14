@@ -1,29 +1,63 @@
 terraform {
   required_providers {
     proxmox = {
-      source = "Telmate/proxmox"
-      version = "~>2.9.14"
+      source  = "Telmate/proxmox"
+      version = ">= 2.9.14"
     }
   }
 }
 
 provider "proxmox" {
-  pm_api_url          = ""
-  pm_api_token_id     = ""
-  pm_api_token_secret = ""
+  pm_api_url          = "https://pve.example.com:8006/api2/json"
+  pm_api_token_id     = "test_api@pve!terraform"
+  pm_api_token_secret = "XXXXX-XXXX-XXXX-XXXX-XXXXXXX"
   pm_tls_insecure     = true
   pm_debug            = true
 }
 
-module "deploy-test" {
-  source = "../"
+module "example_deploy_vm" {
+  source = "github.com/myplixa/terraform-pve-telmate"
 
-  node_name = ["pve1"]
-  pool_name = "test"
-  tags_vm = ["test", "servise"]
-  description_vm = "Deploy vm from terraform"
-  count_vm = "2"
+  node_name = ["pve"]
+  pool_name = "pool-example"
+  count_vm  = 3
+  tags_vm   = ["example", "vm"]
 
-  vm_name = "test-1"
-  vm_clone_id = "Debian-12-Cloud"
+  vm_name         = "vm-example"
+  vm_clone_id     = "Debian12-CloudInit"
+  vm_cpu_type     = "host"
+  vm_cores        = 4
+  vm_memory       = 8192
+  vm_disk_sizes   = ["20G"]
+  vm_storage_name = "local-zfs"
+
+  vm_newtwork_bridge_name = "vmbr0"
+
+  # Cloud-Init Info
+  vm_user_name          = "user"
+  vm_user_password      = "P@ssw0rd"
+  vm_user_ssh_key_file  = "~/.ssh/id_rsa.pub"
+
+  vm_search_domain      = "example.local.corp"
+  vm_dns                = ["8.8.8.8", "1.1.1.1"]
+
+  #These two parameters can be commented out, and then the network parameters will be set to "dhcp"
+  vm_network_ip_address = "xxx.xxx.xxx.xxx/24"
+  vm_network_gw_adress  = "xxx.xxx.xxx.xxx"
+}
+
+output "example_deploy_vm" {
+  value = module.example_deploy_vm.vm_info
+}
+
+resource "local_file" "ansible_inventory_file" {
+  content = templatefile("./ansible/inventory/hosts.tmpl", {
+    
+    vm_user = var.vm_user_name
+    vm_domain = var.vm_domain_name
+
+    vm_example = module.example_deploy_vm.vm_info
+  })
+
+  filename = "./ansible/inventory/hosts"
 }
