@@ -4,6 +4,36 @@
 > This Terraform module uses the **[Telmate](https://github.com/Telmate/terraform-provider-proxmox)** provider version **v2.9.14**.  
 > Supported version of Proxmox not higher than **8.0.3**
 
+## Variables info
+#### Global variables
+| Name | Type | Default |
+| ---- | ---- | ------- |
+| node_name | list(string) | ["pve"] or ["pve","pve1","pve2"] |
+| pool_name | string | null |
+| tags_vm | list(string) | [""] or ["test","prod"] |
+| description_vm | string | null |
+| count_vm | number | 1 |
+| vm_name | string | "node" |
+| vm_clone_id | string | null |
+| vm_cpu_type | string | "host" |
+| vm_cores | number | 2 |
+| vm_memory | number | 4096 |
+| vm_disk_sizes | list(string) | ["10G"] or ["10G","50G"] |
+| vm_storage_name | string | "local-zfs" |
+| vm_newtwork_bridge_name | string | "vmbr0" |
+| vm_network_vlan_id | number | null |
+
+#### Cloud-Init variables
+| Name | Type | Default |
+| ---- | ---- | ------- |
+| vm_user_name | string | null |
+| vm_user_password | string | null |
+| vm_search_domain | string | null |
+| vm_dns | list(string) | null or ["8.8.8.8","1.1.1.1"] |
+| vm_network_ip_address | string | null |
+| vm_network_gw_adress | string | null |
+| vm_user_ssh_key_file | string | null |
+
 ## Example of using the module
 #### main.tf
 ```sh
