@@ -9,6 +9,7 @@
 | Name | Type | Default |
 | ---- | ---- | ------- |
 | node_name | list(string) | ["pve"] or ["pve","pve1","pve2"] |
+| create_pool | bool | "true" or "false" |
 | pool_name | string | null |
 | tags_vm | list(string) | [""] or ["test","prod"] |
 | description_vm | string | null |
