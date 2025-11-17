@@ -2,7 +2,7 @@ terraform {
   required_providers {
     proxmox = {
       source  = "Telmate/proxmox"
-      version = ">= 2.9.14"
+      version = "3.0.2-rc05"
     }
   }
 }
@@ -18,32 +18,50 @@ provider "proxmox" {
 module "example_deploy_vm" {
   source = "github.com/myplixa/terraform-pve-telmate"
 
-  node_name = ["pve"]
-  pool_name = "pool-example"
-  count_vm  = 3
-  tags_vm   = ["example", "vm"]
+  node_name      = "pve"
+  pool_name      = "pool-example"
+  vm_clone_id    = "Debian12-CloudInit"
+  vm_name        = "vm-example"
+  vm_count       = 1
+  vm_tags        = "example, vm"
+  vm_description = "Example VM created by Terraform"
 
-  vm_name         = "vm-example"
-  vm_clone_id     = "Debian12-CloudInit"
-  vm_cpu_type     = "host"
-  vm_cores        = 4
-  vm_memory       = 8192
-  vm_disk_sizes   = ["20G"]
-  vm_storage_name = "local-zfs"
+  # Resurce configuration
+  resources = {
+    cpu_type = "x86-64-v2-AES"
+    sockets  = 1
+    cores    = 2
+    memory   = 2
+  }
 
-  vm_newtwork_bridge_name = "vmbr0"
+  # Disk configuration
+  disk = {
+    system_size  = 25
+    data_sizes   = "10"
+    storage_name = "local-zfs"
+    format       = "raw"
+  }
 
-  # Cloud-Init Info
-  vm_user_name          = "user"
-  vm_user_password      = "P@ssw0rd"
-  vm_user_ssh_key_file  = "~/.ssh/id_rsa.pub"
+  # Network configuration
+  network = {
+    model       = "virtio"
+    bridge_name = "vmbr0"
+    vlan_id     = 100
+    ip_address  = "xxx.xxx.xxx.xxx/24"
+    gw_address  = "xxx.xxx.xxx.xxx"
+    domain_name = "example.local.corp"
+    dns         = "8.8.8.8, 1.1.1.1"
+  }
 
-  vm_search_domain      = "example.local.corp"
-  vm_dns                = ["8.8.8.8", "1.1.1.1"]
+  # Cloud-Init configuration
+  cloud_init = {
+    ssh_username      = "vmuser"
+    ssh_password      = "P@ssw0rd"
+    ssh_user_key_file = "~/.ssh/id_rsa.pub"
+    cloudinit_file    = "beckup:snippets/cloud-init.yaml"
+    os_upgrade = true
+  }
 
-  #These two parameters can be commented out, and then the network parameters will be set to "dhcp"
-  vm_network_ip_address = "xxx.xxx.xxx.xxx/24"
-  vm_network_gw_adress  = "xxx.xxx.xxx.xxx"
 }
 
 output "example_deploy_vm" {
@@ -52,9 +70,9 @@ output "example_deploy_vm" {
 
 resource "local_file" "ansible_inventory_file" {
   content = templatefile("./ansible/inventory/hosts.tmpl", {
-    
-    vm_user = var.vm_user_name
-    vm_domain = var.vm_domain_name
+
+    vm_user = module.example_deploy_vm.vm_user_name
+    vm_domain = model.example_deploy_vm.vm_domain_name
 
     vm_example = module.example_deploy_vm.vm_info
   })

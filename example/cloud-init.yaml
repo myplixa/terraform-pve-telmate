@@ -1,0 +1,54 @@
+#cloud-config
+#Example https://cloudinit.readthedocs.io/en/latest/reference/examples.html
+
+package_update: true
+package_upgrade: true
+
+timezone: Europe/Moscow
+
+# ----------------------------
+# Create user
+# ----------------------------
+users:
+  - name: vmuser
+    groups: sudo
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    home: /home/user
+    lock-passwd: false
+    plain_text_passwd: "P@ssw0rd!"
+
+# ----------------------------
+# Install pacakeges
+# ----------------------------
+packages:
+  - vim
+  - git
+  - net-tools
+  - dnsutils
+
+# ----------------------------
+# Runn comands
+# ----------------------------
+runcmd:
+  - echo "Running cloud-init runcmd scripts"
+  - curl -fsSL https://get.docker.com -o get-docker.sh
+  - sudo sh get-docker.sh
+
+# ----------------------------
+# Disk and filesystem setup
+# ----------------------------
+disk_setup:
+  /dev/vdb:
+    table_type: gpt
+    layout: true
+    overwrite: true
+
+fs_setup:
+  - label: data-stor
+    filesystem: ext4
+    device: /dev/vdb1
+    partition: auto
+
+mounts:
+  - [ /dev/vdb1, /mnt, "ext4", "defaults,nofail", "0", "2" ]

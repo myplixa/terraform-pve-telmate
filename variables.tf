@@ -1,37 +1,31 @@
-##--- Start of global Virtual Machine params description ---##
+##--- Global params configuration ---##
 variable "node_name" {
   description = "Target PVE node to deploy VM"
-  type        = list(string)
-  default     = ["pve"]
+  type        = string
+  default     = "pve"
 }
 variable "pool_name" {
   description = "Target Pool name for VM(s)"
   type        = string
   default     = null
 }
-variable "create_pool" {
-  description = "Flag to control pool creation"
-  type        = bool
-  default     = true
-}
-variable "tags_vm" {
+variable "vm_tags" {
   description = "List of virtual machine tags"
-  type        = list(string)
-  default     = [""]
+  type        = string
+  default     = null
 }
-variable "description_vm" {
+variable "vm_description" {
   description = "Owner, purpose and other description of the VM(s)"
   type        = string
   default     = null
 }
-variable "count_vm" {
+variable "vm_count" {
   description = "Count of VM(s) to be deployed"
   type        = number
   default     = 1
 }
-##--- End region ---##
 
-##--- Start Virtual Machine configurations description ---##
+##--- Virtual Machine configurations ---##
 variable "vm_name" {
   description = "Name of the VM"
   type        = string
@@ -42,82 +36,47 @@ variable "vm_clone_id" {
   type        = string
   default     = null
 }
-variable "vm_cpu_type" {
-  description = "Modeless CPU"
-  type        = string
-  default     = "host"
-}
-variable "vm_cores" {
-  description = "Count of cores to be deployed"
-  type        = number
-  default     = 2
-}
-variable "vm_memory" {
-  description = "Count of memory to be deployed"
-  type        = number
-  default     = 4096
-}
-variable "vm_disk_sizes" {
-  description = "Size of the disk in GigaBytes"
-  type        = list(string)
-  default     = ["10G"]
-}
-variable "vm_storage_name" {
-  description = "Name of the PVE storage that will used to store our VM"
-  type        = string
-  default     = "local-zfs"
-}
-##--- End region ---#
 
-##--- Start Network Interface configuration ---#
-variable "vm_newtwork_bridge_name" {
-  description = "VM bridge interface name"
-  type        = string
-  default     = "vmbr0"
-}
-variable "vm_network_vlan_id" {
-  description = "VLAN ID to assign to VM"
-  type = number
-  default = null
-}
-##--- End region ---#
+variable "resources" {
+  type = object({
+    sockets  = optional(number, 1)
+    cores    = optional(number, 1)
+    cpu_type = optional(string, "host")
+    memory   = optional(number, 1)
 
-##--- Start description of Cloud-Init variables ---##
-variable "vm_user_name" {
-  description = "Override default cloud-init user for provisioning"
-  type        = string
-  default     = null
+  })
 }
-variable "vm_user_password" {
-  description = "Override default cloud-init user's password. Please, use \"Sensitive\" param!"
-  type        = string
-  sensitive   = true
-  default     = null
+
+##--- Disk configuration ---#
+variable "disk" {
+  type = object({
+    system_size  = optional(number, 10)
+    data_sizes   = optional(string, "")
+    storage_name = optional(string, "local-zfs")
+    format       = optional(string, "raw")
+  })
 }
-variable "vm_search_domain" {
-  description = "Sets default DNS search domain suffix."
-  type        = string
-  default     = null
+
+##--- Network Interface configuration ---#
+variable "network" {
+  type = object({
+    bridge_name = optional(string, "vmbr0")
+    model       = optional(string, "virtio")
+    vlan_id     = optional(number, null)
+    ip_address  = optional(string, null)
+    gw_address  = optional(string, null)
+    dns         = optional(string, null)
+    domain_name = optional(string, null)
+  })
 }
-variable "vm_dns" {
-  description = "Sets default DNS server for QEMU GuestAgent"
-  type        = list(string)
-  default     = null
+
+##--- Cloud-Init configuration ---##
+variable "cloud_init" {
+  type = object({
+    os_upgrade        = optional(bool, false)
+    cloudinit_file    = optional(string, null)
+    ssh_username      = optional(string, null)
+    ssh_password      = optional(string, null)
+    ssh_user_key_file = optional(string, null)
+  })
 }
-variable "vm_network_ip_address" {
-  description = "IP address to assign to QEMU GuestAgent"
-  type        = string
-  default     = null
-}
-variable "vm_network_gw_adress" {
-  description = "IP address of default gateway"
-  type        = string
-  default     = null
-}
-variable "vm_user_ssh_key_file" {
-  description = "Newline delimited list of SSH public keys to add to authorized keys file for the user created from the \"vm_user_name\" parameter"
-  type        = string
-  sensitive   = true
-  default     = null
-}
-##--- End region ---##

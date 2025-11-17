@@ -1,63 +1,91 @@
 resource "proxmox_pool" "pool" {
   comment = "Creation of a brand new pool for the VMs"
-  count   = var.create_pool ? 1 : 0
-  poolid  = local.pool_name
+  count   = local.create_pool
+  poolid  = var.pool_name
 }
 
 resource "proxmox_vm_qemu" "deploy_vm" {
-  depends_on = [ proxmox_pool.pool ]
+  depends_on = [proxmox_pool.pool]
 
-  target_node = element(local.node_name, count.index)
-  desc        = local.description_vm
-  tags        = join(",", local.tags_vm)
-  pool        = local.pool_name
-  count       = local.count_vm
+  for_each    = toset(local.vm_names)
+  target_node = local.deploy_vm_to_nodes[each.key]
 
-  name       = "${local.vm_name}-${count.index}"
+  desc = var.vm_description
+  tags = join(",", local.vm_tags)
+  pool = var.pool_name
+
+  name       = each.key
   os_type    = "cloud-init"
-  clone      = local.vm_clone_id
+  clone      = var.vm_clone_id
   full_clone = true
   agent      = 1
-  boot       = "c"
+  boot       = "cdn"
   scsihw     = "virtio-scsi-pci"
   bootdisk   = "virtio0"
   hotplug    = 0
-  oncreate   = true
+  kvm        = true
   onboot     = true
-  
+  machine    = "q35"
   qemu_os    = "l26"
-  cpu        = local.vm_cpu_type
-  cores      = local.vm_cores
-  memory     = local.vm_memory
 
-  # Network interface configuration
-  network {
-    model     = "virtio"
-    firewall  = false
-    link_down = false
-    tag       = local.vm_network_vlan_id
-    bridge    = local.vm_newtwork_bridge_name
+  cpu {
+    cores   = var.resources.cores
+    sockets = var.resources.sockets
+    type    = var.resources.cpu_type
   }
 
-  # Disk pool creation
+  memory  = var.resources.memory * 1024
+  balloon = var.resources.memory * 1024
+
+  disk {
+    slot    = "ide2"
+    type    = "cloudinit"
+    storage = local.storage_name
+  }
+
+  disk {
+    slot     = "virtio0"
+    type     = "disk"
+    size     = local.system_disk_size
+    storage  = local.storage_name
+    format   = local.disk_format
+    cache    = "none"
+    iothread = true
+    discard  = true
+  }
+
   dynamic "disk" {
-    for_each = { for index, val in local.vm_disk_sizes : tostring(index) => val }
+    for_each = local.data_disks
     content {
-      storage  = local.vm_storage_name
+      slot     = "virtio${disk.key + 1}"
+      type     = "disk"
       size     = disk.value
-      type     = "virtio"
-      iothread = 1
-      aio      = "native"
+      storage  = local.storage_name
+      format   = local.disk_format
+      cache    = "none"
+      iothread = true
+      discard  = true
     }
   }
 
+  network {
+    id        = 0
+    model     = var.network.model
+    firewall  = false
+    link_down = false
+    tag       = var.network.vlan_id
+    bridge    = var.network.bridge_name
+  }
+
+  nameserver   = join(" ", local.network_dns)
+  searchdomain = var.network.domain_name
+  ipconfig0    = join(",", local.vm_network_config)
+
   # Cloud-init Config
-  ciuser     = local.vm_user_name
-  cipassword = local.vm_user_password
-
-  nameserver   = join(" ", local.vm_dns)
-  searchdomain = local.vm_search_domain
-
-  ipconfig0 = join(",", compact(local.vm_network_config))
-  sshkeys   = local.ssh_public_key
+  ciuser     = local.ssh_username
+  cipassword = local.ssh_password
+  sshkeys    = local.ssh_public_key
+  cicustom   = local.cloudinit_file != null ? "user=${local.cloudinit_file}" : null
+  ciupgrade  = local.os_upgrade
+  skip_ipv6  = true
 }
