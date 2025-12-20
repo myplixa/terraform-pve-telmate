@@ -52,3 +52,5 @@ fs_setup:
 
 mounts:
   - [ /dev/vdb1, /mnt, "ext4", "defaults,nofail", "0", "2" ]
+
+final_message: "Cloud-init script completed on $(hostname) $TIMESTAMP"

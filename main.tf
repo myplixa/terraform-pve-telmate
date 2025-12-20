@@ -10,13 +10,14 @@ resource "proxmox_vm_qemu" "deploy_vm" {
   for_each    = toset(local.vm_names)
   target_node = local.deploy_vm_to_nodes[each.key]
 
-  desc = var.vm_description
+  description = var.vm_description
   tags = join(",", local.vm_tags)
   pool = var.pool_name
 
   name       = each.key
   os_type    = "cloud-init"
-  clone      = var.vm_clone_id
+  clone      = var.template_name
+  clone_id   = var.template_id
   full_clone = true
   agent      = 1
   boot       = "cdn"
@@ -25,8 +26,8 @@ resource "proxmox_vm_qemu" "deploy_vm" {
   hotplug    = 0
   kvm        = true
   onboot     = true
-  machine    = "q35"
-  qemu_os    = "l26"
+  machine    = var.machine
+  qemu_os    = var.qemu_os
 
   cpu {
     cores   = var.resources.cores

@@ -20,7 +20,7 @@ module "example_deploy_vm" {
 
   node_name      = "pve"
   pool_name      = "pool-example"
-  vm_clone_id    = "Debian12-CloudInit"
+  template       = "Debian12-CloudInit"
   vm_name        = "vm-example"
   vm_count       = 1
   vm_tags        = "example, vm"
@@ -55,11 +55,11 @@ module "example_deploy_vm" {
 
   # Cloud-Init configuration
   cloud_init = {
+    os_upgrade        = true
     ssh_username      = "vmuser"
     ssh_password      = "P@ssw0rd"
     ssh_user_key_file = "~/.ssh/id_rsa.pub"
-    cloudinit_file    = "beckup:snippets/cloud-init.yaml"
-    os_upgrade = true
+    # cloudinit_file    = "beckup:snippets/cloud-init.yaml"
   }
 
 }
@@ -70,11 +70,8 @@ output "example_deploy_vm" {
 
 resource "local_file" "ansible_inventory_file" {
   content = templatefile("./ansible/inventory/hosts.tmpl", {
-
-    vm_user = module.example_deploy_vm.vm_user_name
-    vm_domain = model.example_deploy_vm.vm_domain_name
-
-    vm_example = module.example_deploy_vm.vm_info
+    ssh_username = module.example_deploy_vm.ssh_username
+    vm_example   = module.example_deploy_vm.vm_info
   })
 
   filename = "./ansible/inventory/hosts"

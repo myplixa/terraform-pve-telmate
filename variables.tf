@@ -24,17 +24,31 @@ variable "vm_count" {
   type        = number
   default     = 1
 }
-
-##--- Virtual Machine configurations ---##
+##--- Virtual Machine information ---##
 variable "vm_name" {
   description = "Name of the VM"
   type        = string
   default     = "node"
 }
-variable "vm_clone_id" {
-  description = "Name of the Template VM we should use as the source to clone"
+variable "template_name" {
+  description = "Neme or ID of the template VM"
   type        = string
   default     = null
+}
+variable "template_id" {
+  description = "Neme or ID of the template VM"
+  type        = number
+  default     = null
+}
+
+##--- Virtual Machine configurations ---##
+variable "qemu_os" {
+  type = string
+  default = "l26"
+}
+variable "machine" {
+  type = string
+  default = "q35"
 }
 
 variable "resources" {
@@ -43,7 +57,6 @@ variable "resources" {
     cores    = optional(number, 1)
     cpu_type = optional(string, "host")
     memory   = optional(number, 1)
-
   })
 }
 

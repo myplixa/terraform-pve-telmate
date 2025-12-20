@@ -3,6 +3,10 @@ output "vm_name" {
   value       = [for vm in proxmox_vm_qemu.deploy_vm : vm.name]
 }
 
+output "ssh_username" {
+  value = try(var.cloud_init.ssh_username, null)
+}
+
 output "ip_address" {
   description = "List of VM IP addresses"
   value       = [for vm in proxmox_vm_qemu.deploy_vm : vm.default_ipv4_address]
