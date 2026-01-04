@@ -38,10 +38,7 @@ locals {
 #  DISK CONFIGURATION
 #------------------------------------------------------------------------------
 locals {
-  data_disks       = compact([for d in split(",", lookup(var.disk, "data_sizes", "")) : trimspace(d)])
-  system_disk_size = lookup(var.disk, "system_size", 10)
-  storage_name     = lookup(var.disk, "storage_name", "local-zfs")
-  disk_format      = lookup(var.disk, "format", "raw")
+  data_disks = compact([for d in split(",", lookup(var.disk, "data_sizes", "")) : trimspace(d)])
 }
 
 #------------------------------------------------------------------------------
@@ -62,11 +59,11 @@ locals {
 #  CLOUD-INIT CONFIGURATION
 #------------------------------------------------------------------------------
 locals {
-  cloudinit_file    = try(var.cloud_init.cloudinit_file, null)
-  ssh_username      = try(var.cloud_init.ssh_username, null)
-  ssh_password      = try(var.cloud_init.ssh_password, null)
-  ssh_user_key_file = try(var.cloud_init.ssh_user_key_file, null)
-  os_upgrade        = try(var.cloud_init.os_upgrade, false)
+  cloudinit_file    = try(var.cloud_init.cloudinit_file)
+  ssh_username      = try(var.cloud_init.ssh_username)
+  ssh_password      = try(var.cloud_init.ssh_password)
+  ssh_user_key_file = try(var.cloud_init.ssh_user_key_file)
+  os_upgrade        = try(var.cloud_init.os_upgrade)
 
   ssh_public_key = (
     local.ssh_user_key_file == null ? null :

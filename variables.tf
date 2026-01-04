@@ -43,11 +43,11 @@ variable "template_id" {
 
 ##--- Virtual Machine configurations ---##
 variable "qemu_os" {
-  type = string
+  type    = string
   default = "l26"
 }
 variable "machine" {
-  type = string
+  type    = string
   default = "q35"
 }
 
@@ -67,6 +67,11 @@ variable "disk" {
     data_sizes   = optional(string, "")
     storage_name = optional(string, "local-zfs")
     format       = optional(string, "raw")
+    cache        = optional(string, "none")
+    asyncio      = optional(string, "native")
+    iothread     = optional(bool, true)
+    discard      = optional(bool, false)
+    replicate    = optional(bool, true)
   })
 }
 

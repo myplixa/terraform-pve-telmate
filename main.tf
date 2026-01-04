@@ -11,23 +11,23 @@ resource "proxmox_vm_qemu" "deploy_vm" {
   target_node = local.deploy_vm_to_nodes[each.key]
 
   description = var.vm_description
-  tags = join(",", local.vm_tags)
-  pool = var.pool_name
+  tags        = join(",", local.vm_tags)
+  pool        = var.pool_name
 
-  name       = each.key
-  os_type    = "cloud-init"
-  clone      = var.template_name
-  clone_id   = var.template_id
-  full_clone = true
-  agent      = 1
-  boot       = "cdn"
-  scsihw     = "virtio-scsi-pci"
-  bootdisk   = "virtio0"
-  hotplug    = 0
-  kvm        = true
-  onboot     = true
-  machine    = var.machine
-  qemu_os    = var.qemu_os
+  name               = each.key
+  os_type            = "cloud-init"
+  clone              = var.template_name
+  clone_id           = var.template_id
+  full_clone         = true
+  agent              = 1
+  boot               = "cdn"
+  scsihw             = "virtio-scsi-pci"
+  bootdisk           = "virtio0"
+  hotplug            = 0
+  kvm                = true
+  start_at_node_boot = true
+  machine            = var.machine
+  qemu_os            = var.qemu_os
 
   cpu {
     cores   = var.resources.cores
@@ -41,31 +41,35 @@ resource "proxmox_vm_qemu" "deploy_vm" {
   disk {
     slot    = "ide2"
     type    = "cloudinit"
-    storage = local.storage_name
+    storage = var.disk.storage_name
   }
 
   disk {
-    slot     = "virtio0"
-    type     = "disk"
-    size     = local.system_disk_size
-    storage  = local.storage_name
-    format   = local.disk_format
-    cache    = "none"
-    iothread = true
-    discard  = true
+    slot      = "virtio0"
+    type      = "disk"
+    size      = var.disk.system_size
+    storage   = var.disk.storage_name
+    format    = var.disk.format
+    asyncio   = var.disk.asyncio
+    replicate = var.disk.replicate
+    cache     = var.disk.cache
+    iothread  = var.disk.iothread
+    discard   = var.disk.discard
   }
 
   dynamic "disk" {
     for_each = local.data_disks
     content {
-      slot     = "virtio${disk.key + 1}"
-      type     = "disk"
-      size     = disk.value
-      storage  = local.storage_name
-      format   = local.disk_format
-      cache    = "none"
-      iothread = true
-      discard  = true
+      slot      = "virtio${disk.key + 1}"
+      type      = "disk"
+      size      = disk.value
+      storage   = var.disk.storage_name
+      format    = var.disk.format
+      asyncio   = var.disk.asyncio
+      replicate = var.disk.replicate
+      cache     = var.disk.cache
+      iothread  = var.disk.iothread
+      discard   = var.disk.discard
     }
   }
 

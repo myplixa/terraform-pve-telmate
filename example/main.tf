@@ -2,7 +2,7 @@ terraform {
   required_providers {
     proxmox = {
       source  = "Telmate/proxmox"
-      version = "3.0.2-rc05"
+      version = "3.0.2-rc07"
     }
   }
 }
@@ -70,7 +70,6 @@ output "example_deploy_vm" {
 
 resource "local_file" "ansible_inventory_file" {
   content = templatefile("./ansible/inventory/hosts.tmpl", {
-    ssh_username = module.example_deploy_vm.ssh_username
     vm_example   = module.example_deploy_vm.vm_info
   })
 

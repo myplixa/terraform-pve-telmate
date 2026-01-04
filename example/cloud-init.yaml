@@ -1,9 +1,16 @@
 #cloud-config
 #Example https://cloudinit.readthedocs.io/en/latest/reference/examples.html
 
+# ----------------------------
+# Update and upgrade
+# ----------------------------
 package_update: true
 package_upgrade: true
+package_reboot_if_required: true
 
+# ----------------------------
+# Timezone
+# ----------------------------
 timezone: Europe/Moscow
 
 # ----------------------------
@@ -34,6 +41,20 @@ runcmd:
   - echo "Running cloud-init runcmd scripts"
   - curl -fsSL https://get.docker.com -o get-docker.sh
   - sudo sh get-docker.sh
+  - echo "Run Before command"
+  - sudo apt -y autoremove && sudo apt autoclean
+
+# ----------------------------
+# Write files
+# ----------------------------
+write_files:
+  - path: /etc/sysctl.d/10-disable-ipv6.conf
+    permissions: 0644
+    owner: root
+    content: |
+      net.ipv6.conf.all.disable_ipv6 = 1
+      net.ipv6.conf.default.disable_ipv6 = 1
+      net.ipv6.conf.lo.disable_ipv6 = 1
 
 # ----------------------------
 # Disk and filesystem setup

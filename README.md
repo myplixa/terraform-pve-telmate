@@ -1,7 +1,7 @@
 ## Terraform module for creating vm on ProxmoxVE
 
 > [!NOTE]
-> This Terraform module uses the **[Telmate](https://github.com/Telmate/terraform-provider-proxmox)** provider version **v3.0.2-rc05**.  
+> This Terraform module uses the **[Telmate](https://github.com/Telmate/terraform-provider-proxmox)** provider version **v3.0.2-rc07**.  
 > Supported version of Proxmox not higher than **9.1.1**
 
 > [!IMPORTANT]
