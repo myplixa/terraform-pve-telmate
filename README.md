@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > This Terraform module uses the **[Telmate](https://github.com/Telmate/terraform-provider-proxmox)** provider version **v3.0.2-rc07**.  
-> Supported version of Proxmox not higher than **9.1.1**
+> Supported version of Proxmox not higher than **9.1.2**
 
 > [!IMPORTANT]
 >This terraform module uses pre-prepared virtual machine templates.
@@ -53,7 +53,7 @@ terraform {
   required_providers {
     proxmox = {
       source  = "Telmate/proxmox"
-      version = "3.0.2-rc05"
+      version = "3.0.2-rc07"
     }
   }
 }
@@ -105,7 +105,6 @@ module "example_deploy_vm" {
     ssh_password      = "P@ssw0rd"
     ssh_user_key_file = "~/.ssh/id_rsa.pub"
     os_upgrade        = true
-    cloudinit_file    = "local:snippets/custom-cloudinit.yaml"
   }
 
   OR
@@ -124,7 +123,6 @@ output "example_deploy_vm" {
 
 resource "local_file" "ansible_inventory_file" {
   content = templatefile("./ansible/inventory/hosts.tmpl", {
-    ssh_username = module.example_deploy_vm.ssh_username
     vm_example   = module.example_deploy_vm.vm_info
   })
 
@@ -155,7 +153,7 @@ ${value.fqdn} ansible_host=${value.ip}
 %{ endfor ~}
 
 [all:vars]
-ansible_user=${ssh_username}
+ansible_user=${coalesce(values(vm_example)[0].ssh_user, "root")}
 ansible_ssh_private_key_file="~/.ssh/id_rsa"
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 ansible_python_interpreter=/usr/bin/python3
